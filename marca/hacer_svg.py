@@ -59,8 +59,8 @@ def apilado_en(cx, cy, ancho, color):
     return f'<g fill="{color}" transform="translate({tx:.3f} {ty:.3f}) scale({s:.5f})">{grupo(SPICY)}{grupo(RNDR)}</g>'
 
 
-(salida / "spicy-logo.svg").write_text(horizontal("#0b0b0c"), encoding="utf-8")
-(salida / "spicy-logo-white.svg").write_text(horizontal("#ffffff"), encoding="utf-8")
+(salida / "spicy-logo.svg").write_text(horizontal("#0b0b0c"), encoding="utf-8", newline="\n")
+(salida / "spicy-logo-white.svg").write_text(horizontal("#ffffff"), encoding="utf-8", newline="\n")
 
 # Ícono: cuadrado rojo con el logo blanco, como el favicon del sitio. El viewBox es el que
 # packaging/icons.sh espera del ícono original (le suma margen para la versión de macOS).
@@ -71,6 +71,7 @@ cx, cy = caja[0] + caja[2] / 2, caja[1] + caja[2] / 2
     f'<rect x="-10" y="-19.42" width="136.34" height="136.34" fill="{ROJO}"/>'
     f"{apilado_en(cx, cy, 136.34 * 0.765, '#ffffff')}</svg>\n",
     encoding="utf-8",
+    newline="\n",
 )
 
 # Barra de menús de macOS (imagen plantilla: solo cuenta la transparencia): cuadrado negro con
@@ -81,6 +82,7 @@ cx, cy = caja[0] + caja[2] / 2, caja[1] + caja[2] / 2
     f"{apilado_en(50, 50, 72, '#000')}</mask></defs>"
     '<rect x="4" y="4" width="92" height="92" fill="#000" mask="url(#letras)"/></svg>\n',
     encoding="utf-8",
+    newline="\n",
 )
 
 # Fondo de la ventana del DMG (660 × 400 pt): panel rojo con el logo y una flecha de la app a
@@ -97,5 +99,6 @@ cx, cy = caja[0] + caja[2] / 2, caja[1] + caja[2] / 2
     '<line x1="404" y1="205" x2="490" y2="205" stroke="#0b0b0c" stroke-width="1.2"/>'
     '<polygon points="489,199.5 499,205 489,210.5" fill="#0b0b0c"/></svg>\n',
     encoding="utf-8",
+    newline="\n",
 )
 print("listo:", ", ".join(sorted(p.name for p in salida.glob("*.svg"))))
