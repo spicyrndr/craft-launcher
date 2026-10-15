@@ -142,7 +142,24 @@ jobs:
           workspaces: codigo
           key: probar
       - working-directory: codigo
-        run: cargo test --workspace --locked
+        run: cargo test --workspace --locked --no-fail-fast
+      # Las pruebas de la interfaz guardan capturas cuando existe esta variable; sirven para ver la
+      # marca sin instalar nada. No bloquean la publicación si el equipo no puede dibujar.
+      - name: Capturas de la interfaz
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        working-directory: codigo
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/capturas"
+          ARTCRAFT_LAUNCHER_SNAPSHOTS="$RUNNER_TEMP/capturas" cargo test --locked -p artcraft-launcher-ui-egui --tests
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: capturas-de-la-interfaz
+          path: ${{ runner.temp }}/capturas
+          retention-days: 30
+          if-no-files-found: ignore
 
   windows:
     name: Windows x64

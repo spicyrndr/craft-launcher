@@ -132,6 +132,9 @@ def nombres(a):
     # Antes que nada, porque las reglas siguientes buscan el texto ya cambiado.
     a.cambiar_en_todos("ArtCraft Launcher", NOMBRE, minimo=100)
     a.cambiar_en_todos("ArtCraftLauncher", "SpicySuite", minimo=5)
+    # Húngaro: «az» va antes de vocal (az ArtCraft) y «a» antes de consonante (a Spicy Suite).
+    a.cambiar_en_todos("az Spicy Suite", "a Spicy Suite", minimo=0)
+    a.cambiar_en_todos("Az Spicy Suite", "A Spicy Suite", minimo=0)
 
 
 def catalogo(a):
@@ -257,6 +260,38 @@ def macos(a):
     )
 
 
+def pruebas(a):
+    """Las pruebas del original que comprueban valores de la marca esperan ahora los de Spicy Suite,
+    así siguen probando lo mismo: que cada enlace abre su página y que el launcher elige sus
+    propios archivos al actualizarse."""
+    a.cambiar("crates/native/src/self_update.rs", '"artcraft-launcher-0.2.0-', f'"{ID}-0.2.0-', veces=None)
+    u = "crates/ui-egui/tests/ui.rs"
+    a.cambiar(u, '"artcraft-launcher"', f'"{ID}"', veces=None)
+    a.cambiar(u, 'sites.contains(&"https://getartcraft.com".to_string())', f'sites.contains(&"{SITIO}".to_string())')
+    a.cambiar(
+        u,
+        '    assert_eq!(click_opens(&mut h, "X").as_deref(), Some("https://x.com/get_artcraft"));\n'
+        '    assert_eq!(click_opens(&mut h, "YouTube").as_deref(), Some("https://www.youtube.com/@OfficialArtcraftStudios"));\n'
+        '    assert_eq!(click_opens(&mut h, "TikTok").as_deref(), Some("https://www.tiktok.com/@artcraft.studios"));\n'
+        '    assert_eq!(click_opens(&mut h, "Instagram").as_deref(), Some("https://www.instagram.com/officialartcraftstudios"));\n'
+        '    assert_eq!(click_opens(&mut h, "LinkedIn").as_deref(), Some("https://www.linkedin.com/company/artcraft-ai"));\n',
+        '    assert_eq!(click_opens(&mut h, "Instagram").as_deref(), Some("https://www.instagram.com/spicyrender.mx"));\n'
+        '    assert_eq!(click_opens(&mut h, "Facebook").as_deref(), Some("https://www.facebook.com/spicyrender"));\n'
+        '    assert_eq!(click_opens(&mut h, "Behance").as_deref(), Some("https://www.behance.net/SPICYRENDER"));\n',
+    )
+    a.cambiar(
+        u,
+        'for label in ["Website", "GitHub", "Discord", "X", "YouTube", "TikTok", "Instagram", "LinkedIn"] {',
+        'for label in ["Website", "GitHub", "Discord", "Instagram", "Facebook", "Behance"] {',
+    )
+    a.cambiar(u, 'assert_eq!(right.len(), 8, "{width}: {right:?}");', 'assert_eq!(right.len(), 6, "{width}: {right:?}");')
+    a.cambiar(
+        "crates/ui-egui/tests/hungarian.rs",
+        'for label in ["Webhely", "GitHub", "X", "Instagram", "LinkedIn", "YouTube", "TikTok"] {',
+        'for label in ["Webhely", "GitHub", "Instagram", "Facebook", "Behance"] {',
+    )
+
+
 def activos(a):
     # Los archivos de marca de ArtCraft se reemplazan en su lugar: el código los sigue buscando
     # en la misma ruta y no hay que tocarlo.
@@ -323,7 +358,7 @@ def main(args):
             iconos(a)
             print("íconos listos")
             return 0
-        for paso in (nombres, catalogo, identidad, interfaz, windows, macos, activos):
+        for paso in (nombres, catalogo, identidad, interfaz, windows, macos, pruebas, activos):
             paso(a)
         quedan = revisar(a)
     except ReglaRota as e:
