@@ -1,0 +1,33 @@
+Spicy Suite
+Spicy Render, 2026.
+
+Spicy Suite is a modified version of ArtCraft Launcher (https://github.com/storytold/craft-launcher),
+Copyright (c) 2026 ArtCraft Team and the ArtCraft Launcher contributors, licensed under the MIT
+License or the Apache License, Version 2.0, at your option (LICENSE-MIT, LICENSE-APACHE). Spicy
+Render's changes (marca/aplicar.py and the GitHub Actions workflows) are offered under the same
+terms. The release assets also carry ArtCraft Launcher's own NOTICE file, unchanged.
+
+Spicy Suite is not an ArtCraft product and is not made, sponsored or endorsed by the ArtCraft Team.
+It does not include the ArtCraft name, wordmark, logo or "A" mark, which are trademarks of the
+ArtCraft Team. The apps it installs (PhotoCraft, FilmCraft and the rest of the Craft App Suite)
+belong to their authors and are downloaded unmodified from their own repositories under
+github.com/storytold.
+
+Spicy Render marks
+
+The Spicy Render name, SPICY RNDR and the Spicy Render logo (marca/activos/spicy-*.svg and
+dmg-background.svg, and everything rendered from them) belong to Spicy Render. They are not covered
+by the MIT or Apache-2.0 license.
+
+Third-party material added by Spicy Suite
+
+marca/activos/social/facebook.svg, behance.svg: Simple Icons 16.34.0
+(https://cdn.jsdelivr.net/npm/simple-icons@16.34.0/icons/<name>.svg), CC0 1.0. The only change is
+fill="#ffffff" on the root element, for tinting. The logos are trademarks of Meta Platforms, Inc.
+and Adobe Inc., used only to link to Spicy Render's own accounts.
+
+---
+
+Spicy Suite es una versión modificada de ArtCraft Launcher, del ArtCraft Team y sus colaboradores,
+con licencia MIT o Apache 2.0. No es un producto de ArtCraft ni está respaldado por su equipo. El
+nombre y el logo de Spicy Render son de Spicy Render y no están cubiertos por esas licencias.

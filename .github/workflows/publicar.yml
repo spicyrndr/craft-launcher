@@ -1,0 +1,265 @@
+# Compila y publica Spicy Suite a partir de la última versión publicada de ArtCraft Launcher.
+#
+# Cada día revisa si storytold/craft-launcher publicó una versión nueva. Si la hay, toma su código
+# tal cual, le aplica la marca (marca/aplicar.py), corre las pruebas del original, empaqueta
+# Windows y macOS y publica la versión aquí, con el mismo número. Las copias instaladas de Spicy
+# Suite se actualizan desde estas publicaciones.
+#
+# Si el original cambió algo que la marca modifica, aplicar.py se detiene y este flujo falla sin
+# publicar nada: GitHub avisa por correo y la versión anterior sigue disponible.
+
+name: Publicar Spicy Suite
+
+on:
+  schedule:
+    - cron: "17 13 * * *" # todos los días, 7:17 en la Ciudad de México
+  workflow_dispatch:
+    inputs:
+      etiqueta:
+        description: "Versión del original, por ejemplo v0.4.1 (vacío: la última publicada)"
+        type: string
+        default: ""
+      forzar:
+        description: "Volver a compilar aunque esa versión ya esté publicada"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  revisar:
+    name: ¿Hay versión nueva?
+    runs-on: ubuntu-latest
+    outputs:
+      etiqueta: ${{ steps.buscar.outputs.etiqueta }}
+      compilar: ${{ steps.buscar.outputs.compilar }}
+    steps:
+      - id: buscar
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PEDIDA: ${{ inputs.etiqueta }}
+          FORZAR: ${{ inputs.forzar }}
+        run: |
+          set -euo pipefail
+          etiqueta="${PEDIDA:-}"
+          if [ -z "$etiqueta" ]; then
+            etiqueta="$(gh api repos/storytold/craft-launcher/releases/latest --jq .tag_name)"
+          fi
+          if ! [[ "$etiqueta" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::La etiqueta «$etiqueta» no es una versión"
+            exit 1
+          fi
+          compilar=true
+          if gh release view "$etiqueta" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 && [ "$FORZAR" != "true" ]; then
+            compilar=false
+            echo "Spicy Suite $etiqueta ya está publicada: no hay versión nueva del original." >>"$GITHUB_STEP_SUMMARY"
+          fi
+          { echo "etiqueta=$etiqueta"; echo "compilar=$compilar"; } >>"$GITHUB_OUTPUT"
+
+  preparar:
+    name: Aplicar la marca
+    needs: revisar
+    if: needs.revisar.outputs.compilar == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.commit.outputs.commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: storytold/craft-launcher
+          ref: ${{ needs.revisar.outputs.etiqueta }}
+          path: codigo
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: spicy
+          persist-credentials: false
+      - id: commit
+        run: echo "commit=$(git -C codigo rev-parse HEAD)" >>"$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: codigo
+          key: preparar
+      - name: Instalar resvg y las librerías del fondo del DMG
+        run: |
+          cargo install resvg --version "~0.45" --locked
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet 'pillow>=12' ds_store==1.3.3 mac_alias==2.2.3
+      - name: Aplicar la marca
+        run: python3 spicy/marca/aplicar.py codigo
+      - name: Íconos, logo del instalador y fondo del DMG
+        working-directory: codigo
+        run: |
+          bash packaging/icons.sh
+          resvg -w 600 docs/brand/artcraft-logo-white.svg docs/brand/artcraft-logo-white.png
+          "$RUNNER_TEMP/venv/bin/python" packaging/macos/dmg/generate.py
+          python3 ../spicy/marca/aplicar.py . --iconos
+      - name: Empaquetar el código con la marca
+        run: tar -czf codigo-spicy.tgz --exclude=./target --exclude=./.git -C codigo .
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: codigo-spicy
+          path: codigo-spicy.tgz
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vista-de-la-marca
+          path: |
+            codigo/assets/app-icon/artcraft-launcher-1024.png
+            codigo/docs/brand/artcraft-logo-white.png
+            codigo/docs/brand/artcraft-mark-64.png
+            codigo/docs/brand/artcraft-mark-black-44.png
+          retention-days: 30
+
+  probar:
+    name: Pruebas del original (con la marca)
+    needs: preparar
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: codigo-spicy
+      - shell: bash
+        run: mkdir codigo && tar -xzf codigo-spicy.tgz -C codigo
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: codigo
+          key: probar
+      - working-directory: codigo
+        run: cargo test --workspace --locked
+
+  windows:
+    name: Windows x64
+    needs: preparar
+    runs-on: windows-latest
+    env:
+      ARTCRAFT_LAUNCHER_BUILD_SHA: ${{ needs.preparar.outputs.commit }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: codigo-spicy
+      - shell: bash
+        run: mkdir codigo && tar -xzf codigo-spicy.tgz -C codigo
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: stable
+          targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: codigo
+          key: windows
+      - name: Instalar WiX
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g "WixToolset.UI.wixext/5.0.2" "WixToolset.Util.wixext/5.0.2"
+      - name: Compilar y empaquetar
+        shell: pwsh
+        working-directory: codigo
+        run: ./packaging/windows/package.ps1 -Arch x64
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-windows
+          path: codigo/dist/release/*
+          if-no-files-found: error
+
+  macos:
+    name: macOS universal
+    needs: preparar
+    runs-on: macos-15
+    env:
+      ARTCRAFT_LAUNCHER_BUILD_SHA: ${{ needs.preparar.outputs.commit }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: codigo-spicy
+      - run: mkdir codigo && tar -xzf codigo-spicy.tgz -C codigo
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: stable
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: codigo
+          key: macos
+      - name: Compilar y empaquetar
+        working-directory: codigo
+        run: packaging/macos/package.sh --arch universal
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-macos
+          path: codigo/dist/release/*
+          if-no-files-found: error
+
+  publicar:
+    name: Publicar la versión
+    needs: [revisar, preparar, probar, windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: spicy
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*
+          path: archivos
+          merge-multiple: true
+      - name: Licencias y sumas de verificación
+        working-directory: archivos
+        env:
+          ETIQUETA: ${{ needs.revisar.outputs.etiqueta }}
+        run: |
+          curl -fsSL -o NOTICE-ArtCraft-Launcher.txt "https://raw.githubusercontent.com/storytold/craft-launcher/${ETIQUETA}/NOTICE"
+          cp ../spicy/LICENSE-MIT LICENSE-MIT.txt
+          cp ../spicy/LICENSE-APACHE LICENSE-APACHE.txt
+          cp ../spicy/NOTICE NOTICE.txt
+          sha256sum -- * | tee SHA256SUMS.txt
+      - name: Crear o actualizar la publicación
+        working-directory: archivos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ETIQUETA: ${{ needs.revisar.outputs.etiqueta }}
+          COMMIT: ${{ needs.preparar.outputs.commit }}
+        run: |
+          set -euo pipefail
+          version="${ETIQUETA#v}"
+          cat >../notas.md <<EOF
+          Spicy Suite ${ETIQUETA}, basada en [ArtCraft Launcher ${ETIQUETA}](https://github.com/storytold/craft-launcher/releases/tag/${ETIQUETA}) (\`${COMMIT::9}\`) con la marca de Spicy Render.
+
+          | Sistema | Archivo |
+          |---|---|
+          | Windows (recomendado) | \`spicy-suite-${version}-windows-x64.msi\` |
+          | Windows sin instalar | \`spicy-suite-${version}-windows-x64-portable.zip\` |
+          | macOS (Apple Silicon e Intel) | \`spicy-suite-${version}-macos-universal.dmg\` |
+
+          Los archivos no llevan firma digital. En Windows, si aparece «Windows protegió su PC», elija **Más información → Ejecutar de todas formas**. En macOS, la primera vez abra la app con clic derecho → **Abrir**.
+
+          Las copias de Spicy Suite ya instaladas en Windows se actualizan solas. En macOS, descargue el DMG nuevo y reemplace la app.
+          EOF
+          if gh release view "$ETIQUETA" >/dev/null 2>&1; then
+            gh release upload "$ETIQUETA" --clobber -- *
+            gh release edit "$ETIQUETA" --notes-file ../notas.md
+          else
+            gh release create "$ETIQUETA" --target "$GITHUB_SHA" --title "Spicy Suite ${ETIQUETA}" --notes-file ../notas.md -- *
+          fi
+          echo "Publicada Spicy Suite ${ETIQUETA}: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${ETIQUETA}" >>"$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,36 @@
+# Prueba rápida al cambiar la marca: aplica marca/aplicar.py a la última versión publicada de
+# ArtCraft Launcher, sin compilar. Tarda menos de un minuto.
+
+name: Comprobar la marca
+
+on:
+  push:
+    branches: [spicy]
+    paths: ["marca/**", ".github/workflows/**"]
+  pull_request:
+    paths: ["marca/**", ".github/workflows/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: spicy
+          persist-credentials: false
+      - id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "etiqueta=$(gh api repos/storytold/craft-launcher/releases/latest --jq .tag_name)" >>"$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: storytold/craft-launcher
+          ref: ${{ steps.version.outputs.etiqueta }}
+          path: codigo
+          persist-credentials: false
+      - name: Aplicar la marca a ${{ steps.version.outputs.etiqueta }}
+        run: python3 spicy/marca/aplicar.py codigo
