@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spicy Suite · SPICY RNDR</title>
+<meta name="description" content="Spicy Suite instala, actualiza y abre los {{N}} programas Craft en Windows y macOS: imagen, video, audio, diseño, 3D y oficina, en un solo lugar.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b0b0c">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Spicy Suite">
+<meta property="og:description" content="Los {{N}} programas Craft en un solo lugar: se instalan con un clic y avisan cuando hay versión nueva.">
+<meta property="og:image" content="https://suite.spicyrender.studio/icon-512.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-claro-32.png" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-oscuro-32.png" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
+<style>
+/* El estilo del launcher: esquinas rectas, líneas de 1 px en lugar de sombras, Archivo y rótulos en mayúsculas. */
+:root {
+  color-scheme: dark;
+  --negro: #0b0b0c;
+  --fondo: #121316;
+  --hundido: #08080a;
+  --texto: #f2f1ee;
+  --fuerte: #ffffff;
+  --tenue: rgb(242 241 238 / 0.64);
+  --apagado: rgb(242 241 238 / 0.44);
+  --linea: rgb(242 241 238 / 0.14);
+  --linea-fuerte: rgb(242 241 238 / 0.38);
+  --rojo: #e43330;
+  --rojo-hover: #f04a47;
+  --foco: #8088ff;
+  --f: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ancho: 1180px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 400 16px/1.6 var(--f); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+img { display: block; max-width: 100%; height: auto; }
+:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.envoltura { max-width: var(--ancho); margin: 0 auto; padding-inline: 16px; }
+@media (min-width: 720px) { .envoltura { padding-inline: 28px; } }
+
+.rotulo { margin: 0; font: 650 12px/1.3 var(--f); font-stretch: 80%; text-transform: uppercase; letter-spacing: 0.16em; color: var(--tenue); }
+.rotulo span { color: var(--apagado); }
+h1, h2 { margin: 0; font-weight: 620; font-stretch: 118%; color: var(--fuerte); letter-spacing: -0.01em; text-wrap: balance; }
+h1 { font-size: clamp(34px, 8vw, 52px); line-height: 1.04; }
+@media (min-width: 980px) { h1 { font-size: clamp(40px, 3.4vw, 52px); } }
+h2 { font-size: clamp(26px, 3.4vw, 38px); line-height: 1.1; }
+p { margin: 0; }
+
+/* Barra */
+.barra { position: sticky; top: 0; z-index: 5; background: rgb(18 19 22 / 0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--linea); }
+.barra .envoltura { display: flex; align-items: center; gap: 18px; height: 60px; }
+.logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+.logo img { width: 132px; height: auto; }
+.etiqueta { font: 650 11px/1 var(--f); font-stretch: 80%; letter-spacing: 0.16em; text-transform: uppercase; background: var(--texto); color: var(--negro); padding: 5px 8px; }
+.barra nav { margin-left: auto; display: none; gap: 22px; }
+.barra nav a { font: 600 12px/1 var(--f); font-stretch: 80%; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tenue); text-decoration: none; }
+.barra nav a:hover { color: var(--fuerte); }
+.barra .boton { margin-left: auto; }
+@media (min-width: 760px) { .barra nav { display: flex; } .barra .boton { margin-left: 0; } }
+
+.boton { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 22px; background: var(--rojo); color: #fff; text-decoration: none; font: 650 13px/1 var(--f); font-stretch: 85%; letter-spacing: 0.14em; text-transform: uppercase; border: 0; }
+.boton:hover { background: var(--rojo-hover); }
+.boton-chico { min-height: 36px; padding: 0 14px; font-size: 12px; }
+.enlace { font: 600 13px/1 var(--f); font-stretch: 85%; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tenue); text-decoration: none; border-bottom: 1px solid var(--linea-fuerte); padding-bottom: 4px; }
+.enlace:hover { color: var(--fuerte); border-color: var(--fuerte); }
+
+/* Portada */
+.portada { padding-block: 56px 64px; display: grid; gap: 44px; align-items: center; }
+.portada-texto { display: grid; gap: 22px; align-content: start; }
+.entrada { font-size: 18px; color: var(--tenue); max-width: 34em; }
+.acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 26px; margin-top: 6px; }
+.nota { font-size: 13px; color: var(--apagado); }
+.portada-imagen { margin: 0; border: 1px solid var(--linea-fuerte); background: var(--hundido); }
+@media (min-width: 980px) {
+  .portada { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); padding-block: 80px 88px; }
+}
+
+/* Secciones */
+.seccion { border-top: 1px solid var(--linea); padding-block: 64px; }
+.seccion-cab { display: grid; gap: 14px; margin-bottom: 36px; max-width: 46em; }
+.seccion-cab p:not(.rotulo) { color: var(--tenue); }
+
+/* Programas: celdas divididas por líneas, como las tarjetas del launcher */
+.grupo + .grupo { margin-top: 36px; }
+.grupo .rotulo { margin-bottom: 14px; }
+.apps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 268px), 1fr)); border-top: 1px solid var(--linea); border-left: 1px solid var(--linea); }
+.app { position: relative; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 16px; align-items: start; padding: 46px 18px 22px; border-right: 1px solid var(--linea); border-bottom: 1px solid var(--linea); }
+.app-num { position: absolute; top: 14px; left: 18px; font: 700 11px/1 var(--f); font-stretch: 80%; letter-spacing: 0.08em; background: var(--app); color: var(--negro); padding: 4px 7px; }
+.app img { width: 56px; height: 56px; }
+.app-nombre { font: 620 21px/1.15 var(--f); font-stretch: 118%; color: var(--fuerte); }
+.app-nombre span { color: var(--tinta); }
+.app-desc { margin-top: 5px; font-size: 14px; line-height: 1.45; color: var(--tenue); }
+.app-alt { margin-top: 8px; font-size: 13px; color: var(--apagado); }
+
+/* Instalar */
+.pasos { display: grid; gap: 0; border: 1px solid var(--linea); }
+.paso { padding: 26px 22px; display: grid; gap: 16px; align-content: start; }
+.paso + .paso { border-top: 1px solid var(--linea); }
+@media (min-width: 860px) {
+  .pasos { grid-template-columns: 1fr 1fr; }
+  .paso + .paso { border-top: 0; border-left: 1px solid var(--linea); }
+}
+.paso h3 { margin: 0; font: 620 20px/1.2 var(--f); font-stretch: 118%; color: var(--fuerte); }
+.paso ol { margin: 0; padding-left: 1.25em; display: grid; gap: 10px; color: var(--tenue); }
+.paso ol li::marker { color: var(--apagado); font-weight: 650; }
+.paso b, .respuesta b { color: var(--texto); font-weight: 600; }
+.aparte { margin-top: 22px; color: var(--tenue); max-width: 46em; }
+
+.archivos { width: 100%; border-collapse: collapse; margin-top: 36px; font-size: 15px; }
+.archivos th { text-align: left; font: 650 11px/1.3 var(--f); font-stretch: 80%; letter-spacing: 0.16em; text-transform: uppercase; color: var(--apagado); padding: 0 12px 10px 0; border-bottom: 1px solid var(--linea); }
+.archivos td { padding: 14px 12px 14px 0; border-bottom: 1px solid var(--linea); vertical-align: top; }
+.archivos td:last-child, .archivos th:last-child { text-align: right; padding-right: 0; white-space: nowrap; color: var(--tenue); }
+.archivos a { text-decoration: none; border-bottom: 1px solid var(--linea-fuerte); word-break: break-all; }
+.archivos a:hover { border-color: var(--fuerte); }
+.archivos small { display: block; color: var(--apagado); font-size: 13px; }
+.mas-enlaces { display: flex; flex-wrap: wrap; gap: 14px 26px; margin-top: 22px; }
+
+/* Al día */
+.celdas { display: grid; border: 1px solid var(--linea); }
+.celda { padding: 24px 22px; display: grid; gap: 10px; align-content: start; }
+.celda + .celda { border-top: 1px solid var(--linea); }
+.celda p:not(.rotulo) { color: var(--tenue); }
+@media (min-width: 860px) {
+  .celdas { grid-template-columns: repeat(3, 1fr); }
+  .celda + .celda { border-top: 0; border-left: 1px solid var(--linea); }
+}
+
+/* Preguntas */
+.preguntas { border-top: 1px solid var(--linea); }
+.preguntas details { border-bottom: 1px solid var(--linea); }
+.preguntas summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 18px; padding: 20px 0; font: 600 18px/1.35 var(--f); color: var(--fuerte); }
+.preguntas summary::-webkit-details-marker { display: none; }
+.preguntas summary::after { content: "+"; flex: none; font-weight: 400; color: var(--tenue); }
+.preguntas details[open] summary::after { content: "−"; }
+.respuesta { padding: 0 0 22px; display: grid; gap: 12px; color: var(--tenue); max-width: 46em; }
+
+/* Pie */
+.pie { border-top: 1px solid var(--linea); padding-block: 40px 56px; }
+.pie .envoltura { display: grid; gap: 22px; }
+.pie-fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 28px; }
+.pie-enlaces { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.pie-enlaces a { font: 600 12px/1 var(--f); font-stretch: 80%; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tenue); text-decoration: none; }
+.pie-enlaces a:hover { color: var(--fuerte); }
+.pie p { font-size: 13px; color: var(--apagado); max-width: 60em; }
+</style>
+</head>
+<body>
+<header class="barra">
+  <div class="envoltura">
+    <a class="logo" href="#inicio" aria-label="Spicy Suite, inicio"><img src="spicy-logo-white.svg" alt="SPICY RNDR" width="132" height="16"><span class="etiqueta">Suite</span></a>
+    <nav aria-label="Secciones">
+      <a href="#programas">Programas</a>
+      <a href="#instalar">Instalar</a>
+      <a href="#al-dia">Actualizaciones</a>
+      <a href="#preguntas">Preguntas</a>
+    </nav>
+    <a class="boton boton-chico" href="#instalar">Descargar</a>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="envoltura portada">
+    <div class="portada-texto">
+      <p class="rotulo">Herramientas de Spicy Render · v{{VERSION}}</p>
+      <h1>Las herramientas creativas del estudio, en un solo lugar.</h1>
+      <p class="entrada">Spicy Suite instala, actualiza y abre {{N}} programas de código abierto para imagen, video, audio, diseño, 3D y oficina. Cada uno se instala con un clic, y Spicy Suite avisa cuando hay versión nueva.</p>
+      <div class="acciones">
+        <a class="boton" id="boton-principal" href="{{MSI_URL}}" data-mac="{{DMG_URL}}">Descargar para Windows</a>
+        <a class="enlace" href="#archivos">Otras descargas</a>
+      </div>
+      <p class="nota" id="nota-descarga" data-mac="Versión {{VERSION}} para macOS · {{FECHA}} · {{DMG_MB}} MB">Versión {{VERSION}} para Windows · {{FECHA}} · {{MSI_MB}} MB</p>
+    </div>
+    <figure class="portada-imagen">
+      <img src="spicy-suite.webp" srcset="spicy-suite-ligera.webp 582w, spicy-suite.webp 1164w" sizes="(min-width: 980px) 680px, 100vw" width="1164" height="884" alt="Spicy Suite abierta: una tarjeta por programa con su ícono, su estado y el botón para instalar, actualizar o abrir.">
+    </figure>
+  </section>
+
+  <section class="seccion" id="programas">
+    <div class="envoltura">
+      <div class="seccion-cab">
+        <p class="rotulo">01 / Programas</p>
+        <h2>{{N}} programas, siempre en su última versión</h2>
+        <p>Spicy Suite descarga cada programa de su repositorio oficial, elige la versión para su equipo y la verifica antes de instalarla.</p>
+      </div>
+      {{GRUPOS}}
+    </div>
+  </section>
+
+  <section class="seccion" id="instalar">
+    <div class="envoltura">
+      <div class="seccion-cab">
+        <p class="rotulo">02 / Instalar</p>
+        <h2>Listo en un par de minutos</h2>
+        <p>Los instaladores no llevan firma digital, así que el sistema pide una confirmación la primera vez.</p>
+      </div>
+      <div class="pasos">
+        <div class="paso">
+          <h3>Windows</h3>
+          <ol>
+            <li>Descargue el <a href="{{MSI_URL}}">instalador (.msi)</a> y ábralo.</li>
+            <li>Si aparece «Windows protegió su PC», elija <b>Más información → Ejecutar de todas formas</b>.</li>
+            <li>Siga el asistente. No pide permisos de administrador; al terminar, Spicy Suite queda en el menú Inicio.</li>
+          </ol>
+        </div>
+        <div class="paso">
+          <h3>macOS</h3>
+          <ol>
+            <li>Abra el <a href="{{DMG_URL}}">archivo .dmg</a> y arrastre Spicy Suite a Aplicaciones.</li>
+            <li>La primera vez, ábrala con clic derecho → <b>Abrir</b>. Si no aparece la opción, vaya a <b>Ajustes del Sistema → Privacidad y seguridad</b> y elija <b>Abrir de todas formas</b>.</li>
+            <li>Funciona en Mac con Apple Silicon e Intel, con macOS 11 o posterior.</li>
+          </ol>
+        </div>
+      </div>
+      <p class="aparte">Para instalar un programa, pulse <b>Instalar</b> en su tarjeta: Spicy Suite elige la versión para su equipo, comprueba la descarga y la instala.</p>
+
+      <table class="archivos" id="archivos">
+        <thead><tr><th scope="col">Descarga</th><th scope="col">Tamaño</th></tr></thead>
+        <tbody>
+          <tr><td><a href="{{MSI_URL}}">{{MSI_NOMBRE}}</a><small>Windows · instalador, recomendado</small></td><td>{{MSI_MB}} MB</td></tr>
+          <tr><td><a href="{{ZIP_URL}}">{{ZIP_NOMBRE}}</a><small>Windows · sin instalar: descomprima la carpeta y abra spicy-suite.exe</small></td><td>{{ZIP_MB}} MB</td></tr>
+          <tr><td><a href="{{DMG_URL}}">{{DMG_NOMBRE}}</a><small>macOS · Apple Silicon e Intel</small></td><td>{{DMG_MB}} MB</td></tr>
+        </tbody>
+      </table>
+      <div class="mas-enlaces">
+        <a class="enlace" href="{{PAGINA_VERSION}}">Notas de la versión {{VERSION}}</a>
+        <a class="enlace" href="{{SUMAS}}">Sumas SHA-256</a>
+        <a class="enlace" href="https://github.com/spicyrndr/craft-launcher/releases">Versiones anteriores</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" id="al-dia">
+    <div class="envoltura">
+      <div class="seccion-cab">
+        <p class="rotulo">03 / Actualizaciones</p>
+        <h2>Se mantiene al día</h2>
+      </div>
+      <div class="celdas">
+        <div class="celda">
+          <p class="rotulo">Los programas</p>
+          <p>Spicy Suite revisa cada programa en su repositorio original y avisa cuando sale una versión nueva. Se actualizan uno por uno o todos a la vez.</p>
+        </div>
+        <div class="celda">
+          <p class="rotulo">Spicy Suite en Windows</p>
+          <p>Se actualiza sola. Cada día se revisa si hay versión nueva de ArtCraft Launcher, su base, y se publica con la marca de Spicy Render.</p>
+        </div>
+        <div class="celda">
+          <p class="rotulo">Spicy Suite en macOS</p>
+          <p>Avisa cuando hay versión nueva, pero no se instala sola: descargue el .dmg de esta página y reemplace la app en Aplicaciones.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" id="preguntas">
+    <div class="envoltura">
+      <div class="seccion-cab">
+        <p class="rotulo">04 / Preguntas</p>
+        <h2>Preguntas frecuentes</h2>
+      </div>
+      <div class="preguntas">
+        <details>
+          <summary>¿Cómo comparto un diseño de FigCraft?</summary>
+          <div class="respuesta">
+            <p>Por ahora, en la red de la oficina. El servidor público de FigCraft, que opera ArtCraft, guarda como máximo 1000 archivos entre todos sus usuarios y está lleno: por eso aparece «Couldn't publish to the server: the server keeps at most 1000 files».</p>
+            <p>En <b>Compartir este archivo</b>, elija <b>Red local</b> en lugar de <b>En línea</b> y pulse <b>Empezar a compartir</b>. Pase el <b>enlace de invitación</b> o el código; los demás entran con <b>Compartir ▸ Unirse con un código</b>. Mantenga FigCraft abierto mientras los demás trabajan, y si Windows pregunta por el firewall, permita el acceso en redes privadas.</p>
+          </div>
+        </details>
+        <details>
+          <summary>¿Por qué Windows o macOS piden confirmación al instalar Spicy Suite?</summary>
+          <div class="respuesta">
+            <p>Porque el instalador de Spicy Suite no lleva firma digital. Los programas que instala sí se verifican: Spicy Suite comprueba cada descarga con sus sumas SHA-256 y, en macOS, exige la firma de sus autores.</p>
+          </div>
+        </details>
+        <details>
+          <summary>¿Quién hace estos programas?</summary>
+          <div class="respuesta">
+            <p>El ArtCraft Team y sus colaboradores, como código abierto (licencia MIT o Apache 2.0). Spicy Suite es su launcher, ArtCraft Launcher, con la marca de Spicy Render; los programas llegan tal como los publican sus autores.</p>
+            <p>Para dudas o fallas de un programa, el lugar es la <a href="https://discord.gg/artcraft">comunidad de ArtCraft en Discord</a>, que también está en el botón Discord de Spicy Suite.</p>
+          </div>
+        </details>
+        <details>
+          <summary>¿Puedo tener ArtCraft Launcher instalado también?</summary>
+          <div class="respuesta">
+            <p>Sí. Son programas separados, con sus propios ajustes, y no se interfieren. Los dos reconocen los programas que estén instalados en el equipo.</p>
+          </div>
+        </details>
+        <details>
+          <summary>¿Cómo desinstalo un programa o Spicy Suite?</summary>
+          <div class="respuesta">
+            <p>Un programa: en su tarjeta, menú <b>…</b> → <b>Desinstalar…</b></p>
+            <p>Spicy Suite: en Windows, <b>Configuración → Aplicaciones → Spicy Suite → Desinstalar</b>; en macOS, arrástrela de Aplicaciones a la Papelera. Los programas que instaló se quedan.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pie">
+  <div class="envoltura">
+    <div class="pie-fila">
+      <a class="logo" href="https://spicyrender.studio"><img src="spicy-logo-white.svg" alt="SPICY RNDR" width="132" height="16"><span class="etiqueta">Suite {{VERSION}}</span></a>
+      <nav class="pie-enlaces" aria-label="Enlaces">
+        <a href="https://spicyrender.studio">spicyrender.studio</a>
+        <a href="https://shaderlab.spicyrender.studio">Shader Lab</a>
+        <a href="https://github.com/spicyrndr/craft-launcher">Código en GitHub</a>
+      </nav>
+    </div>
+    <p>Spicy Suite es ArtCraft Launcher con la marca de Spicy Render. ArtCraft Launcher, los programas Craft y sus íconos son del ArtCraft Team y sus colaboradores, con licencia MIT o Apache 2.0. Spicy Suite no es un producto de ArtCraft ni está respaldada por su equipo.</p>
+  </div>
+</footer>
+
+<script>
+// La descarga principal sigue al sistema del visitante: el .dmg en Mac, el .msi en lo demás.
+(() => {
+  const boton = document.getElementById("boton-principal");
+  const nota = document.getElementById("nota-descarga");
+  const ua = navigator.userAgent;
+  const movil = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if (movil) {
+    nota.textContent = "Spicy Suite es para computadoras con Windows o macOS: abra esta página desde una de ellas.";
+  } else if (/Macintosh|Mac OS X/.test(ua)) {
+    boton.href = boton.dataset.mac;
+    boton.textContent = "Descargar para macOS";
+    nota.textContent = nota.dataset.mac;
+  }
+})();
+</script>
+</body>
+</html>

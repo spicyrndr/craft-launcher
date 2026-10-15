@@ -11,7 +11,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/spicyrndr/craft-launcher/releases/latest"><b>Descargar Spicy Suite</b></a> ·
+  <a href="https://suite.spicyrender.studio"><b>suite.spicyrender.studio</b></a> ·
+  <a href="https://github.com/spicyrndr/craft-launcher/releases/latest">Descargas</a> ·
   <a href="https://spicyrender.studio">spicyrender.studio</a>
 </p>
 
@@ -53,11 +54,15 @@ Si una versión nueva del original cambia algo que la marca modifica, el flujo s
 publicar nada y GitHub avisa por correo. La versión anterior de Spicy Suite sigue disponible.
 Cómo arreglarlo: [marca/README.md](marca/README.md).
 
+## La página
+
+[suite.spicyrender.studio](https://suite.spicyrender.studio) se genera con [`sitio/hacer.py`](sitio/hacer.py) a partir de [`sitio/plantilla.html`](sitio/plantilla.html) y se publica con GitHub Pages ([`sitio.yml`](.github/workflows/sitio.yml)). Se vuelve a generar sola en cada versión: los enlaces de descarga salen de la última publicación, y la lista de programas, sus descripciones en español y sus íconos, del código del original. Para cambiar textos o diseño, edite la plantilla; la línea «Alternativa a…» de cada programa está en `hacer.py`.
+
 ## Este repositorio
 
 | Rama | Qué tiene |
 |---|---|
-| `spicy` (principal) | La marca y la automatización: [`marca/`](marca/) y [`.github/workflows/`](.github/workflows/) |
+| `spicy` (principal) | La marca ([`marca/`](marca/)), la página de suite.spicyrender.studio ([`sitio/`](sitio/)) y la automatización ([`.github/workflows/`](.github/workflows/)) |
 | `main` | El código de ArtCraft Launcher sin cambios (se puede actualizar con **Sync fork** en GitHub; la compilación no la usa, porque toma el código directamente del original) |
 
 ## Licencia y créditos

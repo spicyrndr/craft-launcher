@@ -1,0 +1,67 @@
+# Publica la página de suite.spicyrender.studio con GitHub Pages.
+#
+# Se vuelve a generar cuando se publica una versión de Spicy Suite (los enlaces de descarga y la
+# lista de programas salen de esa versión) y cuando cambia la página o la marca.
+
+name: Página de Spicy Suite
+
+on:
+  push:
+    branches: [spicy]
+    paths: ["sitio/**", "marca/activos/**", ".github/workflows/sitio.yml"]
+  workflow_run:
+    workflows: ["Publicar Spicy Suite"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: version
+        name: Última versión publicada
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases/latest" >"$RUNNER_TEMP/version.json"
+          echo "etiqueta=$(jq -r .tag_name "$RUNNER_TEMP/version.json")" >>"$GITHUB_OUTPUT"
+      # Solo la lista de programas, sus textos en español y sus íconos.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: storytold/craft-launcher
+          ref: ${{ steps.version.outputs.etiqueta }}
+          path: codigo
+          persist-credentials: false
+          sparse-checkout: |
+            crates/core/src
+            crates/ui-egui/src/i18n
+            assets/app-icons
+      - name: Generar la página
+        run: python3 sitio/hacer.py --original codigo --version "$RUNNER_TEMP/version.json" --salida _sitio
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _sitio
+
+  desplegar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v4
