@@ -18,7 +18,7 @@ Cambia lo que se ve y lo que identifica al launcher:
 - **Nombre:** «ArtCraft Launcher» pasa a **Spicy Suite** en la interfaz, en los 11 idiomas, el
   instalador, el menú de inicio, la bandeja y la barra de menús.
 - **Logo y colores:** el logo de SPICY RNDR en la barra superior y en el instalador, el ícono rojo
-  del favicon del sitio y el rojo `#E43330` como color de acento.
+  del favicon del sitio y el rojo `#E43330` en los avisos y las barras de progreso del launcher.
 - **Enlaces:** el sitio y las redes (Instagram, Facebook y Behance) llevan a Spicy Render. Discord y
   GitHub siguen llevando a ArtCraft, porque ahí está el soporte de los programas.
 - **Identidad**, para que Spicy Suite y ArtCraft Launcher puedan convivir en la misma
@@ -61,8 +61,10 @@ Para arreglarlo:
 
 - **Logo:** edite `hacer_svg.py` y corra `python marca/hacer_svg.py marca/activos`. Los PNG, ICO
   e ICNS se generan solos al compilar.
-- **Colores:** las reglas de `theme.rs` en `aplicar.py` (`accent` y `accent_ink`, en modo oscuro y
-  claro) y el color de la franja del instalador en `package.ps1`.
+- **Colores:** la regla de `theme.rs` en `aplicar.py` (`accent`, en modo oscuro y claro) y el color
+  de la franja del instalador en `package.ps1`. `accent_ink` se dejó en el azul del original a
+  propósito: colorea estados informativos («Disponible para instalar», «Descargando…») y en rojo
+  se confundían con errores.
 
 Después, corra **Publicar Spicy Suite** con *forzar* activado para volver a compilar la versión
 actual. Las copias instaladas no reciben ese cambio hasta la siguiente versión del original,

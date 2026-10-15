@@ -210,9 +210,10 @@ def interfaz(a):
         '        "Behance" => egui::include_image!("../../../assets/social/behance.svg"),\n',
     )
     th = "crates/ui-egui/src/theme.rs"
+    # El rojo de Spicy va en las superficies de acento (aviso de actualización, etiqueta, barra de
+    # progreso, selección). `accent_ink` se queda azul: colorea estados informativos como
+    # «Disponible para instalar», que en rojo parecerían errores.
     a.cambiar(th, "accent: hex(0x2d81ff),", "accent: hex(0xe43330),", veces=2)
-    a.cambiar(th, "accent_ink: hex(0x74aaff),", "accent_ink: hex(0xff6b66),")
-    a.cambiar(th, "accent_ink: hex(0x1659c4),", "accent_ink: hex(0xb3201d),")
     # Textos de la marca: los enlaces de Discord y GitHub siguen siendo los de ArtCraft (soporte
     # de las apps), así que sus textos no cambian.
     a.cambiar_en_todos('tl!("ArtCraft")', f'tl!("{EDITOR}")')
